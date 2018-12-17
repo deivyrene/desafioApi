@@ -104,7 +104,7 @@ var chart = AmCharts.makeChart( "chartdiv", {
     "titles": [{
         "text": "Detalle TMC."
       }],
-    "dataProvider": dataUf,
+    "dataProvider": dataTmc,
     "valueAxes": [ {  "gridColor": "#FFFFFF",
       "gridAlpha": 0.2,
       "dashLength": 0

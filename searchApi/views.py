@@ -60,7 +60,14 @@ class ApiConsulta(View):
                 min_dol = query_dol.aggregate(Min('dolar'))
                 max_dol = query_dol.aggregate(Max('dolar'))
                 
-                qs_json = serializers.serialize('json', query_uf)
+                tes_uf = [{'Valor': query.uf, 'Fecha': '2018-12-17'} for query in query_uf]
+                serialize_uf = json.dumps(tes_uf)
+
+                tes_dol = [{'Valor': query.dolar, 'Fecha': '2018-12-17'} for query in query_dol]
+                serialize_dol = json.dumps(tes_dol)
+
+                tes_tmc = [{'Valor': query.tmc, 'Fecha': '2018-12-17'} for query in query_tmc]
+                serialize_tmc = json.dumps(tes_tmc)
 
                 if query_uf and query_dol:
                     context['uf_bd']  = query_uf
@@ -72,6 +79,9 @@ class ApiConsulta(View):
                     context['max_uf'] = max_uf['uf__max']
                     context['min_uf'] = min_uf['uf__min']
                     context['media_uf'] = prom_uf['uf__avg']
+                    context['ufs'] = serialize_uf
+                    context['dolares'] = serialize_dol
+                    context['tmc_graf'] = serialize_tmc
                 else:
                     self.get_uf_range(desde_, hasta_, context, filter_)
                     if context['ufs'] and context['tmc_api'] and context['dolares']:
@@ -163,7 +173,10 @@ class ApiConsulta(View):
                 tmc = requests.get(API_BASE+"tmc/periodo/"+str(desde_.year)+"/"+str(desde_.month)+"/"+str(hasta_.year)+"/"+str(hasta_.month)+"?apikey="+API_KEY+"&formato="+ FORMAT).json()
                 context['tmc_api'] = tmc
                 
-                context['tmc_graf'] = json.dumps(tmc['TMCs'],ensure_ascii=False)
+                tes_tmc = [{'Valor': query['Valor'], 'Fecha': '2018-12-17'} for query in tmc['TMCs']]
+                serialize_tmc = json.dumps(tes_tmc)
+                
+                context['tmc_graf'] = serialize_tmc
 
                 dolares = [self.get_dolar(x['Fecha']) for x in uf_list['UFs']]
                 context['dolares'] = json.dumps(dolares,ensure_ascii=False) if dolares else {}
