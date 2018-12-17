@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, render_to_response, redirect, get_object_or_404
 from django.views.generic import View
+from django.core import serializers 
+from django.http import HttpResponse 
 
+from django.db.models import Avg, Max, Min, Sum
 from  .models import Uf, Dolar, Tmc
 
 import json
@@ -23,8 +26,9 @@ class ApiConsulta(View):
         response_dolar = requests.get(API_BASE+'dolar?apikey='+API_KEY+'&formato='+FORMAT).json()
         data = response
         data_dolar = response_dolar
-        context['uf'] = data['UFs']
-        context['dolarDia'] = data_dolar['Mensaje'] if data_dolar['CodigoError'] else data_dolar['Dolares']
+        context['ufDia'] = data['UFs']
+        print(data_dolar)
+        context['dolarDia'] = data_dolar['Dolares']
         context['time'] =  datetime.datetime.now()
         context['desde'] = datetime.datetime.now().strftime('%d/%m/%Y')
         context['hasta'] = datetime.datetime.now().strftime('%d/%m/%Y')
@@ -46,26 +50,47 @@ class ApiConsulta(View):
 
         if filter_ == 'uf':
             if desde and hasta:
-                consulta = Uf.objects.filter(date__gte = desde_, date__lte = hasta_)
-                if consulta:
-                    context['uf_bd'] = consulta
+                query_uf = Uf.objects.filter(date__gte = desde_, date__lte = hasta_)
+                query_dol = Dolar.objects.filter(date__gte = desde_, date__lte = hasta_)
+                query_tmc = Tmc.objects.filter(date__gte = desde_, date__lte = hasta_)
+                prom_uf = query_uf.aggregate(Avg('uf'))
+                min_uf = query_uf.aggregate(Min('uf'))
+                max_uf = query_uf.aggregate(Max('uf'))
+                prom_dol = query_dol.aggregate(Avg('dolar'))
+                min_dol = query_dol.aggregate(Min('dolar'))
+                max_dol = query_dol.aggregate(Max('dolar'))
+                
+                qs_json = serializers.serialize('json', query_uf)
+
+                if query_uf and query_dol:
+                    context['uf_bd']  = query_uf
+                    context['dol_bd'] = query_dol
+                    context['tmc_bd'] = query_tmc
+                    context['max_dolar'] = max_dol['dolar__max']
+                    context['min_dolar'] = min_dol['dolar__min']
+                    context['media_dolar'] = prom_dol['dolar__avg']
+                    context['max_uf'] = max_uf['uf__max']
+                    context['min_uf'] = min_uf['uf__min']
+                    context['media_uf'] = prom_uf['uf__avg']
                 else:
                     self.get_uf_range(desde_, hasta_, context, filter_)
-                    if context['ufs']:
+                    if context['ufs'] and context['tmc_api'] and context['dolares']:
                         for uf in context['uf']['UFs']:
                             nueva_uf = Uf()
                             nueva_uf.uf = uf['Valor']
                             nueva_uf.date = uf['Fecha']
                             nueva_uf.save()
-                
-                
-            elif desde:
-                print('desde_', desde)
-                self.get_uf_from(filter_,desde_, context)
-
-            elif hasta:
-                print('hasta_', hasta)
-                self.get_uf_to(filter_,hasta_, context)
+                        for dol in context['dol']['Dolares']:
+                            nuevo_dol = Dolar()
+                            nuevo_dol.dolar = dol['Valor']
+                            nuevo_dol.date = dol['Fecha']
+                            nuevo_dol.save()
+                        for tmc in context['tmc_api']['TMCs']:
+                            nuevo_tmc = Tmc()
+                            nuevo_tmc.tmc = tmc['Valor']
+                            nuevo_tmc.tipo_tmc = tmc['Tipo']
+                            nuevo_tmc.date = tmc['Fecha']
+                            nuevo_tmc.save()
             
     
         return render(request, 'SearchApi/detalles.html', context)
@@ -112,53 +137,6 @@ class ApiConsulta(View):
                 print(e)
 
 
-    def get_uf_to(self,filter_, hasta_, context):
-        try:
-            response = requests.get(API_BASE+filter_+"/anteriores/"+str(hasta_.year)+"/"+str(hasta_.month)+"/dias/"+str(hasta_.day)+"?apikey="+API_KEY+"&formato="+ FORMAT)
-            if response:
-                if response:
-                    uf_list =response.json()
-                    max_uf = self.max_uf(uf_list['UFs'])
-                    context['max_uf'] = max_uf
-                    min_uf = self.min_uf(uf_list['UFs'])
-                    context['min_uf'] = min_uf
-                    context['uf'] = uf_list
-                    dolar= requests.get(API_BASE+"dolar/anteriores/"+str(hasta_.year)+"/"+str(hasta_.month)+"/"+str(hasta_.day)+"?apikey="+API_KEY+"&formato="+ FORMAT).json()
-                    
-                    max_dolar = self.max_dolar(dolar['Dolares'])
-                    context['max_dolar'] = max_dolar
-                    min_dolar = self.min_dolar(dolar['Dolares'])
-                    context['min_dolar'] = min_dolar
-                    context['dol'] = dolar
-                    dolares = [self.get_dolar(x['Fecha']) for x in uf_list['UFs']]
-                    context['dolares'] = json.dumps(dolares,ensure_ascii=False) if dolares else {}
-            context['ufs'] = json.dumps(response.json()['UFs'],ensure_ascii=False)
-        except Exception as e:
-            print(e)
-        
-    def get_uf_from(self,filter_,desde_, context):
-        try:
-            response = requests.get(API_BASE+filter_+"/posteriores/"+str(desde_.year)+"/"+str(desde_.month)+"/dias/"+str(desde_.day)+"?apikey="+API_KEY+"&formato="+ FORMAT)
-            if response:
-                uf_list =response.json()
-                max_uf = self.max_uf(uf_list['UFs'])
-                context['max_uf'] = max_uf
-                min_uf = self.min_uf(uf_list['UFs'])
-                context['min_uf'] = min_uf
-                context['uf'] = uf_list
-                dolar= requests.get(API_BASE+"dolar/posteriores/"+str(desde_.year)+"/"+str(desde_.month)+"/"+str(desde_.day)+"?apikey="+API_KEY+"&formato="+ FORMAT).json()
-                    
-                max_dolar = self.max_dolar(dolar['Dolares'])
-                context['max_dolar'] = max_dolar
-                min_dolar = self.min_dolar(dolar['Dolares'])
-                context['min_dolar'] = min_dolar
-                context['dol'] = dolar
-                dolares = [self.get_dolar(x['Fecha']) for x in uf_list['UFs']]
-                context['dolares'] = json.dumps(dolares,ensure_ascii=False) if dolares else {}
-            context['ufs'] = json.dumps(response.json()['UFs'],ensure_ascii=False)
-        except Exception as e:
-            print(e)
-
     def get_uf_range(self, desde_, hasta_, context, filter_):
         try:
             response = requests.get(API_BASE+filter_+"/periodo/"+str(desde_.year)+"/"+str(desde_.month)+"/"+str(hasta_.year)+"/"+str(hasta_.month)+"?apikey="+API_KEY+"&formato="+ FORMAT)
@@ -181,6 +159,11 @@ class ApiConsulta(View):
                 media = self.promedio_dolar(dolar['Dolares'])
                 context['media_dolar'] = media
                 context['dol'] = dolar
+
+                tmc = requests.get(API_BASE+"tmc/periodo/"+str(desde_.year)+"/"+str(desde_.month)+"/"+str(hasta_.year)+"/"+str(hasta_.month)+"?apikey="+API_KEY+"&formato="+ FORMAT).json()
+                context['tmc_api'] = tmc
+                
+                context['tmc_graf'] = json.dumps(tmc['TMCs'],ensure_ascii=False)
 
                 dolares = [self.get_dolar(x['Fecha']) for x in uf_list['UFs']]
                 context['dolares'] = json.dumps(dolares,ensure_ascii=False) if dolares else {}

@@ -13,8 +13,8 @@
             <div class="jumbotron jumbotron-fluid">
                     <div class="container text-center">
                       <h1 class="display-4">Consulta SEBIF.CL</h1>
-                      <p class="lead">Tasa del día <strong> UF: {{uf.0.Valor}}</p><br>
-                      <p class="lead">Tasa del día <strong> Dólar: {{dolarDia}}</p>
+                      <p class="lead">Tasa del día <strong> UF: {{ufDia.0.Valor}}</p><br>
+                      <p class="lead">Tasa del día <strong> Dólar: {{dolarDia.0.Valor}}</p>
                     </div>
             </div>
         </header>
@@ -36,16 +36,16 @@
                                         <label class="form-check-label" for="defaultCheck1">
                                             Desde
                                         </label>
-                                        <input type="date" name="desde" value="{{desde}}" class="form-control" placeholder="Fecha Desde">
+                                        <input type="date" required name="desde" value="{{desde}}" class="form-control" placeholder="Fecha Desde">
                                     </div>
                                     <div class="col-sm form-group">
                                         <label class="form-check-label" value="{{hasta}}" for="defaultCheck1">
                                             Hasta
                                         </label>
-                                        <input type="date" name="hasta" class="form-control" placeholder="Fecha Hasta">
+                                        <input type="date" required name="hasta" class="form-control" placeholder="Fecha Hasta">
                                     </div>
                                     <div class="col-sm form-group" style="margin-top:26px">
-                                            <button type="submit" class="btn btn-info btn-md"> Ver</button>
+                                            <button type="submit" class="btn btn-danger btn-md"> Ver</button>
                                     </div> 
                                 </div> 
                             </form>
@@ -57,17 +57,17 @@
                         <div class="row">
                                   <div class="col-sm">
                                         {% if max_uf %}
-                                        <li class="list-group-item"> Máximo de la <em>UF</em>:  <strong>{{max_uf.Valor}}</strong> </li>
+                                        <li class="list-group-item"> Máximo de la <em>UF</em>:  <strong>{% if max_uf.Valor %} {{max_uf.Valor}} {%else %} {{max_uf}}  {%endif%}</strong> </li>
                                         {% endif%}
                                   </div>
                                   <div class="col-sm">
                                         {% if min_uf %}
-                                        <li class="list-group-item"> Mínimo de la <em>UF</em>: <strong>{{min_uf.Valor}}</strong> </li>
+                                        <li class="list-group-item"> Mínimo de la <em>UF</em>: <strong>{% if min_uf.Valor %} {{min_uf.Valor}} {%else %} {{min_uf}}  {%endif%}</strong> </li>
                                         {% endif%}
                                   </div>
                                   <div class="col-sm">
                                         {% if media_uf %}
-                                        <li class="list-group-item"> Prom. de la <em>UF</em>: <strong> {{media_uf}}</strong></li>
+                                        <li class="list-group-item"> Prom. de la <em>UF</em>: <strong>{% if media_uf.Valor %} {{media_uf.Valor}} {%else %} {{media_uf}}  {%endif%}</strong></li>
                                         {% endif%}
                                   </div>
                         </div>
@@ -79,17 +79,17 @@
                         <div class="row">
                                 <div class="col-sm">
                                       {% if max_dolar %}
-                                      <li class="list-group-item"> Máximo del <em>$</em>:  <strong>{{max_dolar.Valor}}</strong> </li>
+                                      <li class="list-group-item"> Máximo del <em>$</em>:  <strong>{% if max_dolar.Valor %} {{max_dolar.Valor}} {%else %} {{max_dolar}}  {%endif%}</strong> </li>
                                       {% endif%}
                                 </div>
                                 <div class="col-sm">
                                       {% if min_dolar %}
-                                      <li class="list-group-item"> Mínimo del <em>$</em>: <strong>{{min_dolar.Valor}}</strong> </li>
+                                      <li class="list-group-item"> Mínimo del <em>$</em>: <strong>{% if min_dolar.Valor %} {{min_dolar.Valor}} {%else %} {{min_dolar}}  {%endif%} </strong> </li>
                                       {% endif%}
                                 </div>
                                 <div class="col-sm">
                                       {% if media_dolar %}
-                                      <li class="list-group-item"> Prom. del <em>$</em>: <strong> {{media_dolar}}</strong></li>
+                                      <li class="list-group-item"> Prom. del <em>$</em>: <strong>{% if media_dolar.Valor %} {{media_dolar.Valor}} {%else %} {{media_dolar}}  {%endif%} </strong></li>
                                       {% endif%}
                                 </div>
                        </div>
@@ -97,37 +97,57 @@
                     </div>
                     </div>
                     <div class="row">
-                            <div class="col-md-6">
-                                    <div class="row"><h3>Resultado UF</h3></div>
-                                        <div class="row">
-                                            {% for x in uf.UFs %}
-                                            <ul>UF: {{x.Valor}} Fecha: {{x.Fecha}}</ul>
-                                            {% endfor%}
-                                            {% for x in uf_bd %}
-                                            <ul>UF: {{x.uf}} Fecha: {{x.date|date:'d/m/Y'}}</ul>
-                                            {% endfor%}
-                                        </div>
-                                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <div class="row"><h3>Resultado UF</h3></div>
+                        <div class="row">
+                            {% for x in uf.UFs %}
+                            <ul>UF: {{x.Valor}} Fecha: {{x.Fecha}}</ul>
+                            {% endfor%}
+                            {% for x in uf_bd %}
+                            <ul>UF: {{x.uf}} Fecha: {{x.date|date:'d/m/Y'}}</ul>
+                            {% endfor%}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="row"><h3>Resultado Dolar</h3></div>
                         <div class="row">
                             {% for x in dol.Dolares %}
                             <ul>Dolar: {{x.Valor}} Fecha: {{x.Fecha}}</ul>
-
+                            {% endfor%}
+                            {% for x in dol_bd %}
+                            <ul>Valor: {{x.dolar}} {{x.date|date:'d/m/Y'}}</ul>
                             {% endfor%}
                         </div>
                     </div>
-                    
-                    </div>
-                        <div class="row"><h3>Gráficos</h3></div>
+                    <div class="col-md-4">
+                        <div class="row"><h3>Resultado TMC</h3></div>
                         <div class="row">
-                                <div class="col">
-                                        <div id="chartdiv" data-last-value="{{ufs}}"></div>
-                                </div>
-                                <div class="col">
-                                        <div id="dolardiv" data-dolar-value="{{dolares}}"></div>
-                                </div>
+                            {% for x in tmc_api.TMCs %}
+                            <ul>Valor: {{x.Valor}} Tipo: {{x.Tipo}} Fecha: {{x.Fecha}}</ul>
+                            {% endfor%}
+                            {% for x in tmc_bd %}
+                            <ul>Valor: {{x.tmc}} Tipo:{{x.Tipo}}  {{x.date|date:'d/m/Y'}}</ul>
+                            {% endfor%}
                         </div>
+                    </div>
+                    </div>
+
+                    <div class="row">
+                            <div class="col-md-12">
+                                    <div id="chartdiv" data-last-value="{{ufs}}"></div>
+                            </div>
+                    </div>
+                    <div class="row">
+                            <div class="col-md-12">
+                                    <div id="dolardiv" data-dolar-value="{{dolares}}"></div>
+                            </div>
+                    </div>
+                    <div class="row">
+                            <div class="col-md-12">
+                                <div id="tmcDiv" data-tmc-value="{{tmc_graf}}"></div>
+                            </div>
+                    </div>
+
                                 
         </section>
         <footer>
