@@ -1,6 +1,6 @@
 # Título del Proyecto
 
-_Acá va un párrafo que describa lo que es el proyecto_
+_Aplicacion en Django para consultar Api del SBIF_
 
 ## Comenzando 🚀
 
