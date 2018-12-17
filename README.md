@@ -37,10 +37,10 @@ _Pasos_
           pip install -r requirements-vendor.txt -t lib/
           pip install -r requirements.txt
           
-- Crear una base de datos con nombre desafio
+- Crear una base de datos con el siguiente nombre: "desafio"
 
 - Ejecutar migraciones: python manage.py makemigrations searchApi
-                       python manage.py migrate
+                        python manage.py migrate
 
 - Inicia un servidor web local: python manage.py runserver
 
