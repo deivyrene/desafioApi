@@ -39,5 +39,5 @@ _Finaliza con un ejemplo de cómo obtener datos del sistema o como usarlos para 
 
 _Explica como ejecutar las pruebas automatizadas para este sistema_
 
-### Analice las pruebas end-to-end 🔩
+
 
