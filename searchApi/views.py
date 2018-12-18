@@ -178,8 +178,14 @@ class ApiConsulta(View):
                 
                 context['tmc_graf'] = serialize_tmc
 
-                dolares = [self.get_dolar(x['Fecha']) for x in uf_list['UFs']]
-                context['dolares'] = json.dumps(dolares,ensure_ascii=False) if dolares else {}
-            context['ufs'] = json.dumps(response.json()['UFs'],ensure_ascii=False)
+                tes_dolar = [{'Valor': query['Valor'], 'Fecha': query['Fecha']} for query in dolar['Dolares']]
+                serialize_dolar = json.dumps(tes_dolar)
+                
+                context['dolares'] = serialize_dolar
+
+                tes_uf = [{'Valor': query['Valor'], 'Fecha': query['Fecha']} for query in uf_list['UFs']]
+                serialize_uf = json.dumps(tes_uf)
+                
+                context['ufs'] = serialize_uf
         except Exception as e:
             print(e)
