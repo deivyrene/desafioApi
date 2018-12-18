@@ -27,8 +27,7 @@ class ApiConsulta(View):
         data = response
         data_dolar = response_dolar
         context['ufDia'] = data['UFs']
-        print(data_dolar)
-        context['dolarDia'] = data_dolar['Dolares']
+        #context['dolarDia'] = data_dolar['Dolares'] if "Aqui" else "Sin Valor"
         context['time'] =  datetime.datetime.now()
         context['desde'] = datetime.datetime.now().strftime('%d/%m/%Y')
         context['hasta'] = datetime.datetime.now().strftime('%d/%m/%Y')
