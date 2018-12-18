@@ -28,19 +28,18 @@ _Pasos_
 
 - Luego posicionarse en la carpeta clonada
 
-- Crear un entorno virtual dentro de la carpeta 
+- Activar el entorno virtual dentro de la carpeta 
   Linux virtualenv env
         source env/bin/activate
         pip install -r requirements.txt
-  Windows virtualenv env
-          env\scripts\activate
+  Windows python -m venv env
+          env\Scripts\activate
           pip install -r requirements-vendor.txt -t lib/
           pip install -r requirements.txt
           
 - Crear una base de datos con el siguiente nombre: "desafio"
 
-- Ejecutar migraciones: python manage.py makemigrations searchApi
-                        python manage.py migrate
+- Ejecutar migraciones: python manage.py migrate
 
 - Inicia un servidor web local: python manage.py runserver
 
