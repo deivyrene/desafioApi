@@ -172,7 +172,7 @@ class ApiConsulta(View):
                 tmc = requests.get(API_BASE+"tmc/periodo/"+str(desde_.year)+"/"+str(desde_.month)+"/"+str(hasta_.year)+"/"+str(hasta_.month)+"?apikey="+API_KEY+"&formato="+ FORMAT).json()
                 context['tmc_api'] = tmc
                 
-                tes_tmc = [{'Valor': query['Valor'], 'Fecha': '2018-12-17'} for query in tmc['TMCs']]
+                tes_tmc = [{'Valor': query['Valor'], 'Fecha': query['Fecha']} for query in tmc['TMCs']]
                 serialize_tmc = json.dumps(tes_tmc)
                 
                 context['tmc_graf'] = serialize_tmc
